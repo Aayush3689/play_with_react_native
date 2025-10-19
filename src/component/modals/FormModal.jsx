@@ -8,21 +8,42 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import FloatButton from '../buttons/FloatButton.jsx';
+import Icon from '@component/icons/Icons.jsx';
+import { saveTask, getTasks } from '@utils/Tasks.js';
 
 const { width, height } = Dimensions.get('window');
 
 const FormModal = prop => {
+  // scale animation handling....
+  const scale = useRef(new Animated.Value(0.5)).current;
+  useEffect(() => {
+    if (prop.visible) {
+      scale.setValue(0.5);
+      Animated.spring(scale, {
+        toValue: 1,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, []);
+
+  // react hook form setup.....
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      task: '',
+    },
+  });
 
-  const onSubmit = data => {
-    console.log('data', data);
+  // form data submit function handler....
+  const onSubmit = async data => {
+    await saveTask(data);
+    prop.modalVisible = false
   };
 
   return (
@@ -33,9 +54,7 @@ const FormModal = prop => {
       onRequestClose={() => prop.onClose()}
     >
       <View style={styles.backdrop}>
-        <Animated.View
-          style={[styles.modalBox, { transform: [{ scale: prop.scale }] }]}
-        >
+        <Animated.View style={[styles.modalBox, { transform: [{ scale }] }]}>
           <View style={styles.formContainer}>
             <Controller
               control={control}
@@ -43,9 +62,20 @@ const FormModal = prop => {
               rules={{ required: true }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <View>
-                  <Text>What is to be done?</Text>
+                  {/* label */}
+                  <View style={styles.label}>
+                    <Icon
+                      name={'pencil-square'}
+                      type={'FontAwesome'}
+                      color={'#000'}
+                      size={20}
+                    />
+                    <Text style={styles.labelText}>What is to be done?</Text>
+                  </View>
+
+                  {/* input */}
                   <TextInput
-                  placeholder='Enter your Task'
+                    placeholder="Enter your Task"
                     onChangeText={onChange}
                     onBlur={onBlur}
                     value={value}
@@ -127,5 +157,15 @@ const styles = StyleSheet.create({
 
   addBtnText: {
     color: '#fff',
+  },
+
+  label: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  labelText: {
+    fontSize: 16,
+    marginLeft: 5,
   },
 });

@@ -51,6 +51,6 @@ const styles = StyleSheet.create({
   button: {
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
+    elevation: 10,
   },
 });
