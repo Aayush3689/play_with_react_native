@@ -1,13 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import MainNavigaion from './navigations/MainNavigaion.jsx';
+import MainNavigaion from './navigations/MainNavigaion';
+import { TaskProvider } from '@context/TaskContext';
 
 const App = () => {
   return (
-    <NavigationContainer>
-      <MainNavigaion />
-    </NavigationContainer>
+    <TaskProvider>
+      <NavigationContainer>
+        <MainNavigaion />
+      </NavigationContainer>
+    </TaskProvider>
   );
 };
 

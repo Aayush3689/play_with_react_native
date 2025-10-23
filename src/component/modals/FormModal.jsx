@@ -5,29 +5,17 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import { useEffect, useRef, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import FloatButton from '../buttons/FloatButton.jsx';
 import Icon from '@component/icons/Icons.jsx';
-import { saveTask, getTasks } from '@utils/Tasks.js';
+import { useTaskActions } from '@hooks/tasks/useTaskActions.js';
 
 const { width, height } = Dimensions.get('window');
 
-const FormModal = prop => {
-  // scale animation handling....
-  const scale = useRef(new Animated.Value(0.5)).current;
-  useEffect(() => {
-    if (prop.visible) {
-      scale.setValue(0.5);
-      Animated.spring(scale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, []);
+const FormModal = ({ onClose, visible }) => {
+  const { handleAddTask } = useTaskActions();
 
   // react hook form setup.....
   const {
@@ -36,29 +24,40 @@ const FormModal = prop => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      task: '',
+      title: '',
     },
   });
 
   // form data submit function handler....
   const onSubmit = async data => {
-    await saveTask(data);
-    prop.modalVisible = false
+    try {
+      const task = {
+        status: 'pending',
+        ...data,
+      };
+
+      // add the task and close the modal
+      handleAddTask(task);
+      onClose();
+    } catch (error) {
+      console.log('error in onSubmit', error);
+      return error;
+    }
   };
 
   return (
     <Modal
       animationType="none"
       transparent={true}
-      visible={prop.visible}
-      onRequestClose={() => prop.onClose()}
+      visible={visible}
+      onRequestClose={onClose}
     >
       <View style={styles.backdrop}>
-        <Animated.View style={[styles.modalBox, { transform: [{ scale }] }]}>
+        <Animated.View style={styles.modalBox}>
           <View style={styles.formContainer}>
             <Controller
               control={control}
-              name="task"
+              name="title"
               rules={{ required: true }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <View>

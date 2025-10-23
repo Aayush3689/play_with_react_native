@@ -6,7 +6,15 @@ const Icon = ({ name, type, color, size, rest, style }) => {
   };
 
   const IconComponent = icons[type];
-  return <IconComponent name={name} color={color} size={size} {...rest} style={style} />;
+  return (
+    <IconComponent
+      name={name}
+      color={color}
+      size={size}
+      {...rest}
+      style={style}
+    />
+  );
 };
 
 export default Icon;

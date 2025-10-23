@@ -1,96 +1,64 @@
-import {
-  Animated,
-  Dimensions,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FloatButton from '@component/buttons/FloatButton.jsx';
 import FormModal from '@component/modals/FormModal.jsx';
 import Icon from '@component/icons/Icons.jsx';
-import { getTasks } from '@utils/Tasks.js';
+import TaskList from '../../component/tasks/TaskList';
+import { useTaskActions } from '@hooks/tasks/useTaskActions';
+import { useTask } from '@context/TaskContext';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const Home = () => {
+  // prettier-ignore
+  const { 
+    handleLoadTasks, 
+    handleDeleteTask, 
+    handleCompleteTask } = useTaskActions();
+
+  // const [tasks, setTasks] = useState([]);
+  const { tasks } = useTask();
   const [modalVisible, setModalVisible] = useState(false);
   const toggelModal = () => setModalVisible(!modalVisible);
-  const [tasks, setTasks] = useState([]);
 
-  const loadTasks = async () => {
-    const stored = await getTasks();
-    setTasks(stored);
-  };
-
+  console.log('re-render....');
   useEffect(() => {
-    loadTasks();
+    handleLoadTasks();
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.topHeadingContainer}>
-        <Text style={styles.topHeadingText}>To Do Manager</Text>
-      </View>
+    <>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.topHeadingContainer}>
+          <Text style={styles.topHeadingText}>To Do Manager</Text>
+        </View>
 
-      {/* Tasks list */}
-      <View style={{flex: 1}} >
-        <FlatList
-          data={tasks}
-          contentContainerStyle={{ paddingBottom: 60 }}
-          renderItem={({ item, index }) => (
-            <View style={styles.taskWrapper}>
-              <View style={styles.taskContainer}>
-                {/* left part */}
-                <View style={styles.taskRowLeft}>
-                  <Icon
-                    name={'star'}
-                    type={'FontAwesome'}
-                    color={'#000'}
-                    size={20}
-                    style={styles.taskIcon}
-                  />
-                  <Text style={styles.taskItem}>{item.task}</Text>
-                </View>
+        {/* Tasks list */}
+        <View style={{ flex: 1 }}>
+          <TaskList
+            tasks={tasks}
+            onComplete={handleCompleteTask}
+            onDelete={handleDeleteTask}
+          />
+        </View>
 
-                {/* right part */}
-                <View style={styles.taskRowRight}>
-                  {/* completed btn */}
-                  <TouchableOpacity style={[styles.taskCompBtn]}>
-                    <Text>comp</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.taskDelBtn}>
-                    <Text>Del</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
-          keyExtractor={item => item.id}
-        />
-      </View>
+        {/* float button */}
+        {!modalVisible && (
+          <FloatButton actions={[toggelModal]} backgroundColor="#ce1616ff">
+            <Icon name={'plus'} type={'FontAwesome'} color={'#fff'} size={30} />
+          </FloatButton>
+        )}
+      </SafeAreaView>
 
       {/* add todo form */}
       {modalVisible && (
-        <FormModal visible={modalVisible} onClose={toggelModal} modalVisible />
+        <FormModal
+          visible={modalVisible}
+          onClose={toggelModal}
+        />
       )}
-
-      {/* float button */}
-      {!modalVisible && (
-        <FloatButton actions={[toggelModal]} backgroundColor="#ce1616ff">
-          <Icon
-            name={'plus'}
-            type={'FontAwesome'}
-            color={'#ffffffff'}
-            size={30}
-          />
-        </FloatButton>
-      )}
-    </SafeAreaView>
+    </>
   );
 };
 
@@ -100,6 +68,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: 'relative',
+    backgroundColor: '#fff',
   },
 
   topHeadingContainer: {
@@ -110,7 +79,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#c6c6c66b',
     elevation: 1,
     zIndex: 999,
-    backgroundColor: '#fff'
+    backgroundColor: '#fff',
   },
 
   topHeadingText: {
@@ -122,55 +91,5 @@ const styles = StyleSheet.create({
     fontSize: width * 0.15,
     lineHeight: width * 0.15,
     color: '#fff',
-  },
-
-  taskWrapper: {
-    alignItems: 'center',
-  },
-
-  taskContainer: {
-    backgroundColor: 'yellow',
-    marginTop: 10,
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingTop: 10,
-    paddingBottom: 10,
-    borderRadius: 10,
-    width: width * 0.9,
-    elevation: 5,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  taskRowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-
-  taskItem: {
-    fontSize: 18,
-  },
-
-  taskIcon: {
-    marginTop: 2,
-  },
-
-  taskDelBtn: {
-    backgroundColor: 'red',
-    paddingTop: 8,
-    paddingBottom: 8,
-    paddingRight: 20,
-    paddingLeft: 20,
-    borderRadius: 5,
-  },
-
-  taskRowRight: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-
-  taskCompBtn: {
-    backgroundColor: 'aqua',
   },
 });
